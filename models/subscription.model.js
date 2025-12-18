@@ -2,101 +2,99 @@ import mongoose from "mongoose";
 
 const subscriptionSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "User ID is required"],
-      index: true,
-    },
     name: {
       type: String,
-      required: [true, "Service Name is required"],
+      required: [true, "Subscription name is required"],
       trim: true,
-      maxLength: [100, "Service Name cannot exceed 100 characters"],
+      minLength: 2,
+      maxLength: 100,
     },
     price: {
       type: Number,
-      required: [true, "Subscription Price is required"],
-      min: [0, "Price cannot be less than 0"],
+      required: [true, "Subscription price is required"],
+      min: [0, "Price must be greater than 0"],
     },
     currency: {
       type: String,
-      required: [true, "Currency is required"],
-      enum: ["USD", "EUR", "GBP", "INR", "JPY", "AUD", "CAD"],
-      default: "INR",
-      trim: true,
-      maxLength: [10, "Currency cannot exceed 10 characters"],
+      enum: ["USD", "EUR", "GBP"],
+      default: "USD",
     },
     frequency: {
       type: String,
-      enum: ["weekly", "monthly", "yearly"],
-      required: [true, "Frequency is required"],
+      enum: ["daily", "weekly", "monthly", "yearly"],
     },
     category: {
       type: String,
-      enum: ["entertainment", "productivity", "education", "health", "other"],
-      required: [true, "Category is required"],
+      enum: [
+        "sports",
+        "news",
+        "entertainment",
+        "lifestyle",
+        "technology",
+        "finance",
+        "politics",
+        "other",
+      ],
+      required: true,
     },
     paymentMethod: {
       type: String,
-      enum: ["credit_card", "debit_card", "paypal", "bank_transfer", "other"],
-      required: [true, "Payment Method is required"],
+      required: true,
+      trim: true,
     },
     status: {
       type: String,
-      enum: ["active", "expired", "canceled"],
+      enum: ["active", "cancelled", "expired"],
       default: "active",
     },
     startDate: {
       type: Date,
-      required: [true, "Start Date is required"],
+      required: true,
       validate: {
-        validator: (value) => {
-          return value <= new Date();
-        },
-        message: "Start Date cannot be in the future",
+        validator: (value) => value <= new Date(),
+        message: "Start date must be in the past",
       },
     },
     renewalDate: {
       type: Date,
-      required: [true, "Renewal Date is required"],
       validate: {
         validator: function (value) {
           return value > this.startDate;
         },
-        message: "Renewal Date cannot be in the future",
+        message: "Renewal date must be after the start date",
       },
     },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
   },
-  {timestamps: true} // Automatically manage createdAt and updatedAt fields
+  {timestamps: true}
 );
 
-//Autp calculate renewal date if missing
-
-//Auto calculate renewalDate based on frequency
+// Auto-calculate renewal date if missing.
 subscriptionSchema.pre("save", function (next) {
-  if (this.isModified("startDate") || this.isModified("frequency")) {
-    let renewalDate = new Date(this.startDate);
-    switch (this.frequency) {
-      case "weekly":
-        renewalDate.setDate(renewalDate.getDate() + 7);
-        break;
-      case "monthly":
-        renewalDate.setMonth(renewalDate.getMonth() + 1);
-        break;
-      case "yearly":
-        renewalDate.setFullYear(renewalDate.getFullYear() + 1);
-        break;
-      default:
-        break;
-    }
-    this.renewalDate = renewalDate;
+  if (!this.renewalDate) {
+    const renewalPeriods = {
+      daily: 1,
+      weekly: 7,
+      monthly: 30,
+      yearly: 365,
+    };
 
-    //Auto-update the status if renewal date has passed
-    if (this.renewalDate <= new Date()) {
-      this.status = "expired";
-    }
+    this.renewalDate = new Date(this.startDate);
+    this.renewalDate.setDate(
+      this.renewalDate.getDate() + renewalPeriods[this.frequency]
+    );
   }
+
+  // Auto-update the status if renewal date has passed
+  if (this.renewalDate < new Date()) {
+    this.status = "expired";
+  }
+
   next();
 });
 
