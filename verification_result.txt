@@ -1,0 +1,4 @@
+--- Starting API Verification ---
+
+1. Testing Sign Up...
+Sign Up Status: 400
