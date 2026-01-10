@@ -57,5 +57,7 @@ typings/
 # dotenv environment variables file
 .env
 .env.*.local
+
+api_endpoints.txt
 # next.js build output
 .next
