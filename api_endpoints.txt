@@ -1,0 +1,27 @@
+SUBSCRIPTION TRACKER API ENDPOINTS
+Base URL: /api/v1
+
+AUTHENTICATION
+POST   /api/v1/auth/sign-up   - Register a new user
+POST   /api/v1/auth/sign-in   - Sign in
+POST   /api/v1/auth/sign-out  - Sign out
+
+USERS
+GET    /api/v1/users/         - Get all users
+GET    /api/v1/users/:id      - Get user details
+PUT    /api/v1/users/:id      - Update user details
+DELETE /api/v1/users/:id      - Delete user
+POST   /api/v1/users/         - Create user (dev/placeholder)
+
+SUBSCRIPTIONS
+POST   /api/v1/subscriptions/            - Create subscription
+GET    /api/v1/subscriptions/            - Get all subscriptions
+GET    /api/v1/subscriptions/:id         - Get subscription details
+PUT    /api/v1/subscriptions/:id         - Update subscription
+DELETE /api/v1/subscriptions/:id         - Delete subscription
+GET    /api/v1/subscriptions/user/:id    - Get subscriptions for user
+PUT    /api/v1/subscriptions/:id/cancel  - Cancel subscription
+GET    /api/v1/subscriptions/upcoming-renewals - Get upcoming renewals (next 3 days)
+
+WORKFLOWS
+POST   /api/v1/workflows/subscription/reminder - Trigger reminder workflow
